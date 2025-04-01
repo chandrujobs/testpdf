@@ -94,10 +94,9 @@ def horizontal_stepper(current_step, max_completed_step=1):
                 transition: all 0.3s ease;
             }
             
-            .step-number {
-                font-size: 14px;
-                color: #666;
-                font-weight: bold;
+            .step-icon {
+                font-size: 20px;
+                opacity: 0.5;
             }
             
             .step-completed .step-circle {
@@ -106,11 +105,21 @@ def horizontal_stepper(current_step, max_completed_step=1):
                 color: white;
             }
             
-            .step-active .step-circle {
-                background-color: #eb8c00;
-                border-color: #eb8c00;
+            .step-completed .step-icon {
+                opacity: 1;
                 color: white;
-                box-shadow: 0 0 10px rgba(235, 140, 0, 0.5);
+            }
+            
+            .step-active .step-circle {
+                background-color: #dc6900;
+                border-color: #dc6900;
+                color: white;
+                box-shadow: 0 0 10px rgba(220, 105, 0, 0.5);
+            }
+            
+            .step-active .step-icon {
+                opacity: 1;
+                color: white;
             }
             
             .step-completed .step-circle::after {
@@ -133,7 +142,7 @@ def horizontal_stepper(current_step, max_completed_step=1):
             }
             
             .step-active .step-title {
-                color: #eb8c00;
+                color: #dc6900;
                 font-weight: bold;
                 opacity: 1;
             }
@@ -171,7 +180,7 @@ def horizontal_stepper(current_step, max_completed_step=1):
         stepper_html += f"""
             <div class="step {step_class}">
                 <div class="step-circle">
-                    <span class="step-number">{i}</span>
+                    <span class="step-icon">{step['icon']}</span>
                 </div>
                 <div class="step-title">{step['title']}</div>
             </div>
@@ -419,11 +428,10 @@ def reset_journey():
     st.session_state.current_file = None
     st.session_state.processed_info = {}
     st.session_state.journey_step = 1
-    st.session_state.max_completed_step = 1
     st.session_state.uploaded_pdfs = None
     
     # Clear processing options to default
-    st.session_state.processing_options ={
+    st.session_state.processing_options = {
         'remove_logos': True,
         'add_watermarks': True,
         'handle_scanned_pdfs': True
