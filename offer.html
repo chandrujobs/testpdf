@@ -336,14 +336,14 @@
         <form id="offerForm" action="{{ url_for('offer') }}" method="post" enctype="multipart/form-data" class="main">
             <aside class="sidebar">
                 <div class="progress-tracker">
-                    <div class="step-item completed" data-step="1">
+                    <div class="step-item active" data-step="1">
                         <div class="circle">1</div>
                         <div class="step-content">
                             <div class="step-title">Upload</div>
                             <div class="step-desc">Bulk letters</div>
                         </div>
                     </div>
-                    <div class="step-item active" data-step="2">
+                    <div class="step-item" data-step="2">
                         <div class="circle">2</div>
                         <div class="step-content">
                             <div class="step-title">Configure</div>
@@ -361,7 +361,7 @@
             </aside>
             
             <!-- Step 1 -->
-            <div id="step-1" class="step-panel">
+            <div id="step-1" class="step-panel active">
                 <h2>Step 1: Upload</h2>
                 <div id="uploadArea" class="upload-area">
                     <p>Drag & drop letters here or <span class="browse-link" id="browseLink">browse</span>.</p>
@@ -394,7 +394,7 @@
             </div>
             
             <!-- Step 2 -->
-            <div id="step-2" class="step-panel active">
+            <div id="step-2" class="step-panel">
                 <h2>Step 2: Configure Fields</h2>
                 <div class="checkbox-group">
                     <label><input type="checkbox" name="fields" value="name" checked> Name</label>
@@ -415,8 +415,8 @@
                 <div class="processing-section">
                     <div class="processing-label">Processing Documents:</div>
                     <div class="progress-container">
-                        <div class="progress-bar" id="progressBar" style="width: 80%;">
-                            <span class="progress-text">80 %</span>
+                        <div class="progress-bar" id="progressBar" style="width: 0%;">
+                            <span class="progress-text">0 %</span>
                         </div>
                     </div>
                 </div>
@@ -525,20 +525,17 @@
             
             function simulateProcessing() {
                 // Start at 0 if not already set
-                let currentWidth = parseInt(progressBar.style.width) || 0;
-                if (currentWidth < 80) {
-                    let progress = currentWidth;
-                    const interval = setInterval(() => {
-                        progress += 5;
-                        if (progress >= 80) {
-                            clearInterval(interval);
-                            progress = 80;
-                        }
-                        
-                        progressBar.style.width = `${progress}%`;
-                        progressBar.innerHTML = `<span class="progress-text">${progress} %</span>`;
-                    }, 100);
-                }
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    if (progress >= 80) {
+                        clearInterval(interval);
+                        progress = 80;
+                    }
+                    
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.innerHTML = `<span class="progress-text">${progress} %</span>`;
+                }, 100);
             }
             
             // Event listeners
