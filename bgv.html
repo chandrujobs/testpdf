@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGV Redaction Module</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pwc-orange: #ff6600;
+            --pwc-red: #d04a02;
+            --pwc-light: #fff;
+            --pwc-gray: #f2f2f2;
+            --pwc-dark: #2d2d2d;
+            --max-width: 1280px;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--pwc-gray);
+            color: var(--pwc-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background: var(--pwc-light);
+            border-bottom: 3px solid var(--pwc-orange);
+            padding: 0.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header img {
+            height: 22px;
+        }
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        /* ─── Logo + Nav ─── */
+        .logo-group {
+            display: flex;
+            align-items: center;
+        }
+        .logo-group img {
+            height: 22px;
+        }
+        nav {
+            margin-left: 5rem;
+        }
+        nav a {
+            margin: 0 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            position: relative;
+            padding-bottom: 4px;
+            font-weight: 500;
+        }
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--orange);
+            border-radius: 2px;
+        }
+        .hero {
+            background: var(--pwc-orange);
+            color: white;
+            padding: 2rem 1rem;
+        }
+        .hero-content {
+            max-width: var(--max-width);
+            margin: auto;
+        }
+        .hero h1 {
+            margin: 0 0 0.5rem;
+            font-size: 2rem;
+        }
+        main {
+            flex: 1;
+        }
+        .main {
+            max-width: var(--max-width);
+            margin: 2rem auto;
+            background: white;
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .sidebar {
+            flex: 0 0 260px;
+            background: #fafafa;
+            border-right: 1px solid #ddd;
+            padding: 2rem;
+        }
+
+        /* Updated Stepper with a line connecting all steps */
+        .progress-tracker {
+            position: relative;
+            margin-left: 10px;
+        }
+        
+        /* Line connecting all steps 1, 2, and 3 */
+        .progress-tracker::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            bottom: 25px; /* Extend to near the bottom */
+            left: 25px;
+            width: 2px;
+            background: #ddd;
+            z-index: 0;
+        }
+        
+        .step-item {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Circle styling to match image */
+        .circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--pwc-orange);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            position: relative;
+            z-index: 1;
+            font-size: 1.1rem;
+        }
+        
+        .step-item:not(.active):not(.completed) .circle {
+            background: white;
+            border: 2px solid #ccc;
+            color: #666;
+        }
+        
+        /* Text content styling */
+        .step-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: 8px;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 3px;
+            color: var(--pwc-dark);
+        }
+        
+        .step-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .step-panel {
+            flex: 1;
+            padding: 2rem;
+            display: none;
+            flex-direction: column;
+        }
+        .step-panel.active {
+            display: flex;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 8px;
+            background: #fafafa;
+            margin-bottom: 2rem;
+            transition: background .3s;
+            cursor: pointer;
+        }
+        .upload-area.dragover {
+            background: #fff0e6;
+            border-color: var(--pwc-orange);
+        }
+        /* Styled file table */
+        .file-table-container {
+            margin-bottom: 2rem;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .file-table th, .file-table td {
+            padding: 0.8rem;
+            text-align: left;
+        }
+        .file-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .file-table td {
+            border-bottom: 1px solid #eee;
+            color: #666;
+        }
+        .remove-btn {
+            color: #ff3366;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Empty state styling */
+        .empty-message {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+        }
+        .btn-bar {
+            margin-top: auto;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .btn {
+            background: var(--pwc-orange);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: var(--pwc-red);
+        }
+        
+        /* Configuration section styling */
+        .config-container {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .config-left {
+            flex: 1;
+        }
+        
+        .config-right {
+            flex: 1;
+        }
+        
+        .config-section {
+            margin-bottom: 2rem;
+        }
+        
+        .config-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #444;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .page-range-input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        
+        .page-range-hint {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 0.5rem;
+        }
+        
+        .browse-link {
+            color: var(--pwc-orange);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* Processing section like in the reference image */
+        .processing-section {
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+        .processing-label {
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: #666;
+        }
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--pwc-orange);
+            transition: width 0.3s ease;
+            position: relative;
+            text-align: right;
+        }
+        .progress-text {
+            position: absolute;
+            right: 10px;
+            top: 0;
+            color: white;
+            font-size: 0.8rem;
+            line-height: 20px;
+        }
+
+        /* Error messages */
+        .error-message {
+            color: #ff3366;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-group">
+            <img src="{{ url_for('static', filename='Images/logo.svg') }}" alt="Logo">
+            <nav>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('index') }}" class="active">HC Team</a>
+                <a href="{{ url_for('faqs') }}">FAQs</a>
+                <a href="{{ url_for('about') }}">About</a>
+            </nav>
+        </div>
+        <div class="avatar"></div>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>BGV Redaction Module</h1>
+                <p>Upload background check reports, define fields and page ranges for redaction, then process and securely download the anonymized files.</p>
+            </div>
+        </section>
+        
+        <form id="bgvForm" action="{{ url_for('bgv') }}" method="post" enctype="multipart/form-data" class="main">
+            <aside class="sidebar">
+                <div class="progress-tracker">
+                    <div class="step-item completed" data-step="1">
+                        <div class="circle">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Upload</div>
+                            <div class="step-desc">Bulk reports</div>
+                        </div>
+                    </div>
+                    <div class="step-item active" data-step="2">
+                        <div class="circle">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Configure</div>
+                            <div class="step-desc">Select fields</div>
+                        </div>
+                    </div>
+                    <div class="step-item" data-step="3">
+                        <div class="circle">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Download</div>
+                            <div class="step-desc">Get redacted files</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Step 1 -->
+            <div id="step-1" class="step-panel">
+                <h2>Step 1: Upload</h2>
+                <div id="uploadArea" class="upload-area">
+                    <p>Drag & drop BGV reports here or <span class="browse-link" id="browseLink">browse</span>.</p>
+                    <input type="file" id="fileInput" name="reports" multiple accept=".pdf" style="display:none;">
+                </div>
+                <div id="fileTypeError" class="error-message" style="display:none;">Only PDF files are allowed.</div>
+                
+                <div class="file-table-container">
+                    <table class="file-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40%">Name</th>
+                                <th style="width:20%">Size</th>
+                                <th style="width:20%">Type</th>
+                                <th style="width:20%; text-align:center">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileList">
+                            <tr>
+                                <td colspan="4" class="empty-message">No files uploaded</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="btn-bar">
+                    <button type="button" class="btn" id="clearAll">Clear All</button>
+                    <button type="button" class="btn" id="toConfig">Next →</button>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div id="step-2" class="step-panel active">
+                <h2>Step 2: Configure Redaction</h2>
+                
+                <div class="config-container">
+                    <div class="config-left">
+                        <div class="config-section">
+                            <div class="config-title">Select Redaction Options:</div>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" name="redact_options" value="candidate_name" checked> Candidate Name</label>
+                                <label><input type="checkbox" name="redact_options" value="case_reference" checked> Case Reference</label>
+                                <label><input type="checkbox" name="redact_options" value="dob" checked> Date of Birth</label>
+                                <label><input type="checkbox" name="redact_options" value="level" checked> Level of Check</label>
+                                <label><input type="checkbox" name="redact_options" value="address" checked> Address</label>
+                                <label><input type="checkbox" name="redact_options" value="civil" checked> Civil Proceedings</label>
+                                <label><input type="checkbox" name="redact_options" value="criminal" checked> Criminal Proceedings</label>
+                                <label><input type="checkbox" name="redact_options" value="court" checked> Court Record Verification</label>
+                                <label><input type="checkbox" name="redact_options" value="employment" checked> Employment Verification</label>
+                                <label><input type="checkbox" name="redact_options" value="vendor" checked> Vendor Details</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="config-right">
+                        <div class="config-section">
+                            <div class="config-title">Select Page Range:</div>
+                            <div class="radio-group">
+                                <label><input type="radio" name="page_range" value="all" checked> All</label>
+                                <label><input type="radio" name="page_range" value="specific"> Specify Page Range</label>
+                            </div>
+                            <input type="text" id="pageRangeInput" class="page-range-input" placeholder="Enter page range" disabled>
+                            <div class="page-range-hint">Enter page numbers and/or page ranges separated by commas. For example, 1,3,5-12</div>
+                            <div id="pageRangeError" class="error-message" style="display:none;">Please enter only numbers, commas, and hyphens.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-bar">
+                    <button type="button" class="btn" id="back1">← Back</button>
+                    <button type="button" class="btn" id="toDownload">Next →</button>
+                </div>
+            </div>
+            
+            <!-- Step 3 with processing section like in the reference image -->
+            <div id="step-3" class="step-panel">
+                <h2>Step 3: Download Redacted Files</h2>
+                
+                <div class="processing-section">
+                    <div class="processing-label">Processing Documents:</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar" style="width: 80%;">
+                            <span class="progress-text">80 %</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-bar">
+                    <button type="button" class="btn" id="back2">← Back</button>
+                    <button type="submit" class="btn" id="downloadBtn">Download</button>
+                </div>
+            </div>
+        </form>
+    </main>
+    
+    <script>
+        window.addEventListener('DOMContentLoaded', ()=>{
+            const panels = [1,2,3].map(i=>document.getElementById(`step-${i}`));
+            const items = document.querySelectorAll('.step-item');
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseLink = document.getElementById('browseLink');
+            const fileList = document.getElementById('fileList');
+            const clearAll = document.getElementById('clearAll');
+            const toConfig = document.getElementById('toConfig');
+            const back1 = document.getElementById('back1');
+            const toDownload = document.getElementById('toDownload');
+            const back2 = document.getElementById('back2');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const progressBar = document.getElementById('progressBar');
+            const pageRangeRadios = document.querySelectorAll('input[name="page_range"]');
+            const pageRangeInput = document.getElementById('pageRangeInput');
+            const pageRangeError = document.getElementById('pageRangeError');
+            const fileTypeError = document.getElementById('fileTypeError');
+            
+            // Store files in a variable
+            let files = [];
+            
+            function showStep(n) {
+                panels.forEach((p,i)=>p.classList.toggle('active', i===n-1));
+                items.forEach(it=>{
+                    const idx = +it.dataset.step;
+                    it.classList.remove('active', 'completed', 'inactive');
+                    if (idx < n) {
+                        it.classList.add('completed');
+                    } else if (idx === n) {
+                        it.classList.add('active');
+                    } else {
+                        it.classList.add('inactive');
+                    }
+                });
+                
+                // Update progress bar when going to step 3
+                if (n === 3) {
+                    simulateProcessing();
+                }
+            }
+            
+            function isPdfFile(file) {
+                return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+            }
+            
+            function addFiles(fileList) {
+                let allValid = true;
+                
+                // Check if all files are PDFs
+                Array.from(fileList).forEach(file => {
+                    if (!isPdfFile(file)) {
+                        allValid = false;
+                    }
+                });
+                
+                if (!allValid) {
+                    fileTypeError.style.display = 'block';
+                    return;
+                }
+                
+                fileTypeError.style.display = 'none';
+                
+                // Add valid PDF files
+                Array.from(fileList).forEach(file => {
+                    if (isPdfFile(file) && !files.some(f => f.name === file.name)) {
+                        files.push(file);
+                    }
+                });
+                
+                renderList();
+            }
+            
+            function renderList() {
+                if (files.length === 0) {
+                    fileList.innerHTML = '<tr><td colspan="4" class="empty-message">No files uploaded</td></tr>';
+                    return;
+                }
+                
+                fileList.innerHTML = '';
+                files.forEach((file, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${file.name}</td>
+                        <td>${Math.round(file.size/1024)} KB</td>
+                        <td>PDF</td>
+                        <td><div class="remove-btn">✕</div></td>
+                    `;
+                    tr.querySelector('.remove-btn').addEventListener('click', () => {
+                        files.splice(index, 1);
+                        renderList();
+                    });
+                    fileList.appendChild(tr);
+                });
+            }
+            
+            function validatePageRange() {
+                const pageRangeValue = pageRangeInput.value.trim();
+                
+                // If empty and disabled, it's valid
+                if (pageRangeInput.disabled || pageRangeValue === '') {
+                    pageRangeError.style.display = 'none';
+                    return true;
+                }
+                
+                // Check if contains only numbers, commas and hyphens
+                const isValid = /^[0-9,\-\s]+$/.test(pageRangeValue);
+                
+                if (!isValid) {
+                    pageRangeError.style.display = 'block';
+                    return false;
+                }
+                
+                pageRangeError.style.display = 'none';
+                return true;
+            }
+            
+            function simulateProcessing() {
+                // Start at 0 if not already set
+                let currentWidth = parseInt(progressBar.style.width) || 0;
+                if (currentWidth < 80) {
+                    let progress = currentWidth;
+                    const interval = setInterval(() => {
+                        progress += 5;
+                        if (progress >= 80) {
+                            clearInterval(interval);
+                            progress = 80;
+                        }
+                        
+                        progressBar.style.width = `${progress}%`;
+                        progressBar.innerHTML = `<span class="progress-text">${progress} %</span>`;
+                    }, 100);
+                }
+            }
+            
+            // Event listeners
+            browseLink.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.value = '';
+                fileInput.click();
+            });
+            
+            uploadArea.addEventListener('click', (e) => {
+                if (e.target !== browseLink) {
+                    fileInput.value = '';
+                    fileInput.click();
+                }
+            });
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                addFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    addFiles(e.target.files);
+                }
+            });
+            
+            clearAll.addEventListener('click', () => {
+                files = [];
+                renderList();
+            });
+            
+            toConfig.addEventListener('click', () => {
+                if (files.length === 0) {
+                    alert('Please upload at least one file');
+                    return;
+                }
+                showStep(2);
+            });
+            
+            back1.addEventListener('click', () => showStep(1));
+            
+            toDownload.addEventListener('click', () => {
+                // Validate page range before proceeding
+                if (!validatePageRange()) {
+                    return;
+                }
+                
+                showStep(3);
+            });
+            
+            back2.addEventListener('click', () => showStep(2));
+            
+            // Page range input validation
+            pageRangeInput.addEventListener('input', validatePageRange);
+            
+            // Page range radio buttons
+            pageRangeRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'specific') {
+                        pageRangeInput.disabled = false;
+                        pageRangeInput.focus();
+                    } else {
+                        pageRangeInput.disabled = true;
+                        pageRangeInput.value = '';
+                        pageRangeError.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Handle form submission
+            document.getElementById('bgvForm').addEventListener('submit', function(e) {
+                if (files.length === 0) {
+                    e.preventDefault();
+                    alert('Please upload at least one file');
+                    showStep(1);
+                    return false;
+                }
+                
+                // Validate page range before submission
+                if (!validatePageRange()) {
+                    e.preventDefault();
+                    showStep(2);
+                    return false;
+                }
+                
+                // Create FormData with all files
+                const formData = new FormData(this);
+                files.forEach(file => {
+                    formData.append('files[]', file);
+                });
+                
+                // Form will submit normally
+                return true;
+            });
+        });
+    </script>
+</body>
+</html>
