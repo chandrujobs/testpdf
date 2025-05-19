@@ -1,0 +1,788 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="utf-8"/> 
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/> 
+    <title>Data Shield Platform</title> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/> 
+    <style> 
+        /* ────────── VARIABLES ────────── */ 
+        :root { 
+            --orange: #ff6600; 
+            --red: #d04a02; 
+            --light: #fff; 
+            --gray: #f2f2f2; 
+            --dark: #2d2d2d; 
+            --max: 1280px; 
+        } 
+        * { 
+            box-sizing: border-box; 
+        } 
+        body { 
+            margin:0; 
+            font-family:'Inter',sans-serif; 
+            background:var(--gray); 
+            color:var(--dark); 
+            display:flex; 
+            flex-direction:column; 
+            min-height:100vh; 
+        } 
+        header { 
+            background:var(--light); 
+            border-bottom:3px solid var(--orange); 
+            padding:.5rem 2rem; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+        } 
+        header img{height:22px;} 
+        .avatar{width:28px;height:28px;border-radius:50%;background:#ccc;} 
+        /* ─── Logo + Nav ─── */ 
+        .logo-group { 
+            display: flex; 
+            align-items: center; 
+        } 
+        .logo-group img { 
+            height: 22px; 
+        } 
+        nav { 
+            margin-left: 5rem; 
+        } 
+        nav a { 
+            margin: 0 1rem; 
+            text-decoration: none; 
+            color: var(--dark); 
+            position: relative; 
+            padding-bottom: 4px; 
+            font-weight: 500; 
+        } 
+        nav a.active::after { 
+            content: ''; 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 3px; 
+            background: var(--orange); 
+            border-radius: 2px; 
+        } 
+        .hero { 
+            background:var(--orange); 
+            color:white; 
+            padding:2rem 1rem; 
+        } 
+        .hero-content{max-width:var(--max);margin:auto;} 
+        .hero h1{margin:0 0 .5rem;font-size:2rem;} 
+        main{flex:1;} 
+        .main { 
+            max-width:var(--max); 
+            margin:2rem auto; 
+            background:white; 
+            display:flex; 
+            border-radius:10px; 
+            overflow:hidden; 
+        } 
+        .sidebar { 
+            flex:0 0 260px; 
+            background:#fafafa; 
+            border-right:1px solid #ddd; 
+            padding:2rem; 
+        }
+        
+        /* Progress tracker with line */
+        .progress-tracker {
+            position: relative;
+            margin-left: 10px;
+        }
+        
+        /* Line connecting the steps */
+        .progress-tracker::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            bottom: 25px;
+            left: 25px;
+            width: 3px;
+            background: var(--orange);
+            opacity: 0.3;
+        }
+        
+        /* Step item with spacing */
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        /* Make all circles exactly the same */
+        .circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background-color: white;
+            color: #777;
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            z-index: 1;
+            position: relative;
+        }
+        
+        /* Active circle */
+        .step-item.active .circle {
+            background-color: var(--orange);
+            border-color: var(--orange);
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
+        }
+        
+        /* Completed circle */
+        .step-item.completed .circle {
+            background-color: var(--orange);
+            border-color: var(--orange);
+            color: white;
+        }
+        
+        /* Step content */
+        .step-content {
+            padding-top: 6px;
+        }
+        
+        /* Active and completed step title */
+        .step-item.active .step-title,
+        .step-item.completed .step-title {
+            color: var(--orange);
+        }
+        
+        .step-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        
+        .step-desc {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .step-panel { 
+            flex:1; 
+            padding:2rem; 
+            display:none; 
+            flex-direction:column; 
+        } 
+        .step-panel.active{display:flex;} 
+        .upload-area { 
+            border:2px dashed #ccc; 
+            padding:4rem 2rem; 
+            text-align:center; 
+            border-radius:8px; 
+            background:#fafafa; 
+            margin-bottom:2rem; 
+            transition:background .3s; 
+            cursor:pointer; 
+        } 
+        .upload-area.dragover { 
+            background:#fff0e6; 
+            border-color:var(--orange); 
+        } 
+        .file-table { 
+            width:100%; 
+            border-collapse:collapse; 
+            margin-bottom:2rem; 
+        } 
+        .file-table th,.file-table td { 
+            padding:.6rem; 
+            border-bottom:1px solid #ddd; 
+            text-align:left; 
+        } 
+        .file-table th { 
+            background:#f5f5f5; 
+        } 
+        
+        /* Centered Remove X button */
+        .remove-btn {
+            color: #ff3366;
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .btn-bar { 
+            margin-top:auto; 
+            display:flex; 
+            justify-content:flex-end; 
+            gap:1rem; 
+        } 
+        .btn { 
+            background:var(--orange); 
+            color:white; 
+            border:none; 
+            padding:.6rem 1.2rem; 
+            font-size:1rem; 
+            border-radius:8px; 
+            font-weight:bold; 
+            cursor:pointer; 
+            transition: all 0.3s ease;
+        } 
+        
+        .btn:hover {
+            background: var(--red);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .pdf-select { 
+            width:100%; 
+            padding:.6rem; 
+            border:1px solid #ccc; 
+            border-radius:4px; 
+            margin-bottom:1rem; 
+            font-size:1rem; 
+        } 
+        .tag { 
+            display:inline-block; 
+            background:#eee; 
+            padding:5px 10px; 
+            border-radius:5px; 
+            margin:4px; 
+        } 
+        .tag span { 
+            margin-left:8px; 
+            color:red; 
+            cursor:pointer; 
+            font-weight:bold; 
+        } 
+        /* STEP 2: fixed‐height preview */ 
+        #preview { 
+            width:100%; 
+            height:500px!important; 
+            border:1px solid #ccc; 
+            margin-bottom:1rem; 
+            overflow:hidden; 
+            flex:none!important; 
+        } 
+        #preview embed { 
+            width:100%; 
+            height:100%!important; 
+        } 
+        
+        /* STEP 4: compare embeds */ 
+        .compare { 
+            display:flex; 
+            gap:1rem; 
+            width:100%; 
+            height:500px!important; 
+            overflow:hidden; 
+            flex:none!important; 
+        } 
+        .compare embed { 
+            width:50%; 
+            height:100%!important; 
+            border:1px solid #ccc; 
+        } 
+        #step-4 .btn-bar { 
+            margin-top:1rem; 
+        } 
+        
+        /* Checkbox styling */
+        .checkbox-container {
+            margin: 2rem 0;
+        }
+        
+        .checkbox-label {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .checkbox-label input {
+            margin-right: 10px;
+        }
+        
+        /* Error message for file type validation */
+        .error-message {
+            color: #ff3366;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            text-align: center;
+        }
+    </style> 
+</head> 
+<body> 
+    <header> 
+        <div class="logo-group"> 
+            <img src="{{ url_for('static', filename='Images/logo.svg') }}" alt="Logo"> 
+            <nav> 
+                <a href="{{ url_for('index') }}" class="active">Home</a> 
+                <a href="{{ url_for('faqs') }}">FAQs</a> 
+                <a href="{{ url_for('about') }}">About</a> 
+            </nav> 
+        </div> 
+        <div class="avatar"></div> 
+    </header> 
+    <main> 
+        <section class="hero"> 
+            <div class="hero-content"> 
+                <h1>Data Shield Platform</h1> 
+                <p>Upload PDFs, preview & add keywords, redact logos, then compare & download.</p> 
+            </div> 
+        </section> 
+        <form id="mainForm" action="{{ url_for('custom') }}" data-preview-url="{{ url_for('preview_redacted') }}" method="post" enctype="multipart/form-data" class="main"> 
+            <!-- SIDEBAR WITH ENHANCED STEPPER --> 
+            <aside class="sidebar"> 
+                <div class="progress-tracker"> 
+                    <div class="step-item active" data-step="1"> 
+                        <div class="circle">1</div>
+                        <div class="step-content"> 
+                            <div class="step-title">Upload</div> 
+                            <div class="step-desc">Add PDFs</div> 
+                        </div> 
+                    </div> 
+                    <div class="step-item" data-step="2"> 
+                        <div class="circle">2</div>
+                        <div class="step-content"> 
+                            <div class="step-title">Preview & Keywords</div> 
+                            <div class="step-desc">Select file & add words</div> 
+                        </div> 
+                    </div> 
+                    <div class="step-item" data-step="3"> 
+                        <div class="circle">3</div>
+                        <div class="step-content"> 
+                            <div class="step-title">Redact Logos</div> 
+                            <div class="step-desc">Optional logo removal</div> 
+                        </div> 
+                    </div> 
+                    <div class="step-item" data-step="4"> 
+                        <div class="circle">4</div>
+                        <div class="step-content"> 
+                            <div class="step-title">Download</div> 
+                            <div class="step-desc">Compare & save</div> 
+                        </div> 
+                    </div> 
+                </div> 
+            </aside> 
+            <!-- STEP 1 --> 
+            <div id="step-1" class="step-panel active"> 
+                <h2>Step 1: Upload</h2> 
+                <div id="uploadArea" class="upload-area"> 
+                    <p>Drag & drop PDFs here or <span style="color:var(--orange);font-weight:600;cursor:pointer;" id="browseLink">browse</span>.</p> 
+                    <input type="file" id="fileInput" name="pdfs" multiple accept=".pdf" style="display:none;"> 
+                </div>
+                <div id="fileTypeError" class="error-message">Only PDF files are allowed.</div>
+                <table class="file-table"> 
+                    <thead> 
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th style="text-align:center">Remove</th>
+                        </tr> 
+                    </thead> 
+                    <tbody id="fileList"></tbody> 
+                </table> 
+                <div class="btn-bar"> 
+                    <button type="button" id="resetFilesBtn" class="btn">Clear All</button> 
+                    <button type="button" id="to2" class="btn">Next →</button> 
+                </div> 
+            </div> 
+            <!-- STEP 2 --> 
+            <div id="step-2" class="step-panel"> 
+                <h2>Step 2: Preview & Keywords</h2> 
+                <select id="fileSelect" class="pdf-select"></select> 
+                <div id="preview"></div> 
+                <div style="display:flex;align-items:center;gap:1rem;margin:1rem 0;"> 
+                    <input type="text" id="termInput" style="flex:1;padding:.6rem;" placeholder="Enter a word & press Enter"> 
+                    <button type="button" id="clearTermsBtn" class="btn">Clear All Terms</button> 
+                </div> 
+                <div id="termTags"></div> 
+                <div class="btn-bar"> 
+                    <button type="button" id="back1" class="btn">← Back</button> 
+                    <button type="button" id="to3" class="btn">Next →</button> 
+                </div> 
+            </div> 
+            <!-- STEP 3 --> 
+            <div id="step-3" class="step-panel"> 
+                <h2>Step 3: Redact Logos</h2> 
+                <div class="checkbox-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="redactLogos"> Remove logos
+                    </label>
+                </div>
+                
+                <div class="btn-bar"> 
+                    <button type="button" id="back2" class="btn">← Back</button> 
+                    <button type="button" id="to4" class="btn">Process →</button> 
+                </div> 
+            </div> 
+            <!-- STEP 4 --> 
+            <div id="step-4" class="step-panel"> 
+                <h2>Step 4: Compare & Download</h2> 
+                <select id="fileSelect4" class="pdf-select"></select> 
+                <div class="compare"> 
+                    <embed id="origEmbed" type="application/pdf"/> 
+                    <embed id="redEmbed" type="application/pdf"/> 
+                </div> 
+                <div class="btn-bar"> 
+                    <button type="submit" id="downloadBtn" class="btn" disabled>Download</button> 
+                    <button type="button" id="back3" class="btn">← Back</button> 
+                </div> 
+            </div> 
+            <input type="hidden" name="custom_terms" id="customTermsHidden"/> 
+        </form> 
+    </main> 
+    <script> 
+        window.addEventListener('DOMContentLoaded', ()=> { 
+            const form = document.getElementById('mainForm'); 
+            const previewUrl = form.dataset.previewUrl; 
+            const panels = [1,2,3,4].map(i=>document.getElementById(`step-${i}`)); 
+            const items = document.querySelectorAll('.step-item'); 
+            // Step 1 
+            const uploadArea = document.getElementById('uploadArea'); 
+            const fileInput = document.getElementById('fileInput'); 
+            const browseLink = document.getElementById('browseLink');
+            const fileList = document.getElementById('fileList');
+            const fileTypeError = document.getElementById('fileTypeError');
+            const resetBtn = document.getElementById('resetFilesBtn'); 
+            const to2 = document.getElementById('to2'); 
+            // Step 2 
+            const back1 = document.getElementById('back1'); 
+            const fileSelect = document.getElementById('fileSelect'); 
+            const previewDiv = document.getElementById('preview'); 
+            const termInput = document.getElementById('termInput'); 
+            const clearBtn = document.getElementById('clearTermsBtn'); 
+            const termTags = document.getElementById('termTags'); 
+            const to3 = document.getElementById('to3'); 
+            const hiddenTerms = document.getElementById('customTermsHidden'); 
+            // Step 3 
+            const back2 = document.getElementById('back2'); 
+            const redactLogo = document.getElementById('redactLogos'); 
+            const to4 = document.getElementById('to4'); 
+            // Step 4 
+            const back3 = document.getElementById('back3'); 
+            const fileSelect4 = document.getElementById('fileSelect4'); 
+            const origEmb = document.getElementById('origEmbed'); 
+            const redEmb = document.getElementById('redEmbed'); 
+            const downloadBtn = document.getElementById('downloadBtn'); 
+            let files = [], termsByFile = {}, currentFile = null; 
+            const redactedBlobs = {}; 
+            
+            function showStep(n) { 
+                panels.forEach((p,i)=>p.classList.toggle('active', i===n-1)); 
+                items.forEach(it=>{ 
+                    const idx = +it.dataset.step; 
+                    it.classList.remove('active', 'completed', 'inactive');
+                    if (idx < n) {
+                        it.classList.add('completed');
+                    } else if (idx === n) {
+                        it.classList.add('active');
+                    } else {
+                        it.classList.add('inactive');
+                    }
+                }); 
+            }
+            
+            // Helper function to check if a file is a PDF
+            function isPdfFile(file) {
+                return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+            }
+            
+            // ========== STEP 1 ========== 
+            browseLink.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Reset the file input to ensure onChange triggers even if selecting the same file
+                fileInput.value = '';
+                fileInput.click();
+            });
+            
+            uploadArea.addEventListener('click', (e) => {
+                if (e.target !== browseLink) {
+                    // Reset the file input to ensure onChange triggers even if selecting the same file
+                    fileInput.value = '';
+                    fileInput.click();
+                }
+            });
+            
+            uploadArea.addEventListener('dragover', (e) => { 
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.add('dragover'); 
+            });
+            
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => { 
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('dragover'); 
+                addFiles(e.dataTransfer.files); 
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    addFiles(e.target.files);
+                }
+            });
+            
+            resetBtn.addEventListener('click', () => { 
+                files = []; 
+                termsByFile = {}; 
+                Object.keys(redactedBlobs).forEach(k => delete redactedBlobs[k]); 
+                renderFiles(); 
+                populateSelect();
+                // Hide any error messages
+                fileTypeError.style.display = 'none';
+            });
+            
+            function addFiles(fileList) {
+                let allValid = true;
+                let invalidFiles = [];
+                
+                // Check if all files are PDFs
+                Array.from(fileList).forEach(file => {
+                    if (!isPdfFile(file)) {
+                        allValid = false;
+                        invalidFiles.push(file.name);
+                    }
+                });
+                
+                if (!allValid) {
+                    fileTypeError.style.display = 'block';
+                    return;
+                }
+                
+                fileTypeError.style.display = 'none';
+                
+                // Add valid PDF files
+                Array.from(fileList).forEach(file => {
+                    if (isPdfFile(file) && !files.some(f => f.name === file.name)) {
+                        files.push(file);
+                        termsByFile[file.name] = [];
+                    }
+                });
+                
+                renderFiles();
+                populateSelect();
+            }
+            
+            function renderFiles() {
+                fileList.innerHTML = '';
+                
+                if (files.length === 0) {
+                    fileList.innerHTML = '<tr><td colspan="4" style="text-align:center;">No files uploaded</td></tr>';
+                    return;
+                }
+                
+                files.forEach((file, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = ` 
+                        <td>${file.name}</td> 
+                        <td>application/pdf</td> 
+                        <td>${Math.round(file.size/1024)} KB</td> 
+                        <td><div class="remove-btn">✕</div></td>`;
+                        
+                    tr.querySelector('.remove-btn').addEventListener('click', () => {
+                        delete termsByFile[file.name];
+                        delete redactedBlobs[file.name];
+                        files.splice(index, 1);
+                        renderFiles();
+                        populateSelect();
+                    });
+                    
+                    fileList.appendChild(tr);
+                });
+            }
+            
+            // ========== STEP 2 ========== 
+            to2.addEventListener('click', () => { 
+                if (files.length === 0) {
+                    alert('Upload at least one PDF');
+                    return;
+                }
+                showStep(2); 
+            });
+            
+            back1.addEventListener('click', () => showStep(1));
+            
+            function populateSelect() {
+                fileSelect.innerHTML = '';
+                fileSelect4.innerHTML = '';
+                
+                files.forEach(f => {
+                    // Populate fileSelect (step 2)
+                    const o1 = document.createElement('option');
+                    o1.value = o1.textContent = f.name;
+                    fileSelect.appendChild(o1);
+                    
+                    // Populate fileSelect4 (step 4)
+                    const o2 = document.createElement('option');
+                    o2.value = o2.textContent = f.name;
+                    fileSelect4.appendChild(o2);
+                });
+                
+                if (files.length) {
+                    currentFile = files[0].name;
+                    fileSelect.value = currentFile;
+                    loadPreview();
+                    loadTags();
+                }
+            }
+            
+            fileSelect.addEventListener('change', () => {
+                currentFile = fileSelect.value;
+                loadPreview();
+                loadTags();
+            });
+            
+            function loadPreview() {
+                previewDiv.innerHTML = '';
+                if (!currentFile) return;
+                
+                const file = files.find(x => x.name === currentFile);
+                if (!file) return;
+                
+                const emb = document.createElement('embed');
+                emb.src = URL.createObjectURL(file);
+                emb.type = 'application/pdf';
+                emb.style.width = '100%';
+                emb.style.height = '100%';
+                previewDiv.appendChild(emb);
+            }
+            
+            function loadTags() {
+                termTags.innerHTML = '';
+                if (!currentFile || !termsByFile[currentFile]) return;
+                
+                termsByFile[currentFile].forEach((term, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'tag';
+                    div.innerHTML = `${term}<span>×</span>`;
+                    
+                    div.querySelector('span').addEventListener('click', () => {
+                        termsByFile[currentFile].splice(i, 1);
+                        saveTerms();
+                        loadTags();
+                    });
+                    
+                    termTags.appendChild(div);
+                });
+                
+                saveTerms();
+            }
+            
+            termInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const term = termInput.value.trim();
+                    
+                    if (term && currentFile && !termsByFile[currentFile].includes(term)) {
+                        termsByFile[currentFile].push(term);
+                    }
+                    
+                    termInput.value = '';
+                    loadTags();
+                }
+            });
+            
+            clearBtn.addEventListener('click', () => {
+                if (currentFile) {
+                    termsByFile[currentFile] = [];
+                    loadTags();
+                }
+            });
+            
+            function saveTerms() {
+                hiddenTerms.value = JSON.stringify(termsByFile);
+            }
+            
+            // ========== STEP 3 ========== 
+            to3.addEventListener('click', () => showStep(3));
+            back2.addEventListener('click', () => showStep(2));
+            to4.addEventListener('click', () => processAndCompare());
+            
+            // ========== STEP 4 ========== 
+            back3.addEventListener('click', () => showStep(3));
+            
+            async function processAndCompare() {
+                showStep(4);
+                
+                if (files.length === 0) {
+                    alert('No files to process');
+                    return;
+                }
+                
+                // Set initial original embed
+                origEmb.src = URL.createObjectURL(files[0]);
+                
+                // Process each file
+                for (const file of files) {
+                    const formData = new FormData();
+                    formData.append('pdfs', file);
+                    formData.append('custom_terms', JSON.stringify({
+                        [file.name]: termsByFile[file.name] || []
+                    }));
+                    
+                    if (redactLogo.checked) {
+                        formData.append('redact_logos', 'on');
+                    }
+                    
+                    try {
+                        const response = await fetch(previewUrl, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (response.ok) {
+                            redactedBlobs[file.name] = await response.blob();
+                        } else {
+                            console.error('Failed to process file:', file.name);
+                        }
+                    } catch (error) {
+                        console.error('Error processing file:', file.name, error);
+                    }
+                }
+                
+                // Setup file selection for comparison
+                fileSelect4.addEventListener('change', updateStep4);
+                updateStep4();
+                downloadBtn.disabled = false;
+            }
+            
+            function updateStep4() {
+                if (!fileSelect4.value || files.length === 0) return;
+                
+                const fileName = fileSelect4.value;
+                const originalFile = files.find(x => x.name === fileName);
+                
+                if (originalFile) {
+                    origEmb.src = URL.createObjectURL(originalFile);
+                }
+                
+                const redactedBlob = redactedBlobs[fileName];
+                if (redactedBlob) {
+                    redEmb.src = URL.createObjectURL(redactedBlob);
+                }
+            }
+            
+            // Initialize
+            showStep(1);
+            renderFiles();
+        });
+    </script> 
+</body> 
+</html>
