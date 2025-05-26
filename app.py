@@ -110,7 +110,15 @@ def custom():
                 if not is_valid:
                     return jsonify({"error": f"File '{file.filename}': {message}"}), 400
 
-            terms_map = json.loads(request.form.get('custom_terms', '{}'))
+            # Parse terms map
+            terms_map = {}
+            try:
+                terms_data = request.form.get('custom_terms', '{}')
+                terms_map = json.loads(terms_data)
+                logger.info(f"Parsed terms map: {terms_map}")
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error: {e}")
+                return jsonify({"error": "Invalid terms format"}), 400
             
             # FIXED: Correct parameter checking for checkboxes
             redact_logos = request.form.get('redact_logos') == 'on'
@@ -121,11 +129,9 @@ def custom():
             
             return process_custom_files(files, terms_map, redact_logos, redact_numbers)
 
-        except json.JSONDecodeError:
-            return jsonify({"error": "Invalid terms format"}), 400
         except Exception as e:
             logger.error(f"Custom processing error: {e}")
-            return jsonify({"error": "Processing failed. Please try again."}), 500
+            return jsonify({"error": f"Processing failed: {str(e)}"}), 500
 
     return render_template('custom.html')
 
@@ -137,6 +143,10 @@ def process_custom_files(files, terms_map, redact_logos, redact_numbers=False):
         try:
             filename = secure_filename(file.filename)
             terms = terms_map.get(filename, [])
+            
+            # Ensure terms is a list
+            if not isinstance(terms, list):
+                terms = []
             
             file_content = file.read()
             
@@ -209,6 +219,11 @@ def preview_redacted():
                 terms = data
             else:
                 terms = []
+                
+            # Ensure terms is a list
+            if not isinstance(terms, list):
+                terms = []
+                
         except json.JSONDecodeError:
             terms = []
 
@@ -289,15 +304,23 @@ def debug_logos():
                                 }
                             })
         
-        # Run logo detection
-        logo_boxes = find_logos_simple(page)
+        # Run logo detection with user terms excluded
+        terms = []
+        try:
+            raw_terms = request.form.get('terms', '[]')
+            terms = json.loads(raw_terms) if raw_terms else []
+        except:
+            terms = []
+        
+        logo_boxes = find_logos_simple(page, exclude_terms=terms)
         
         doc.close()
         
         return jsonify({
             "header_elements": header_elements,
             "detected_logos": [[box.x0, box.y0, box.x1, box.y1] for box in logo_boxes],
-            "page_dimensions": [page_rect.width, page_rect.height]
+            "page_dimensions": [page_rect.width, page_rect.height],
+            "excluded_terms": terms
         })
 
     except Exception as e:
