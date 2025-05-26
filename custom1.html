@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>Data Shield Platform</title>
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet"/>
+    <style>
+        /* ─── Global ─── */
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', sans-serif;
+            background: #f2f2f2;
+            color: #2d2d2d;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            font-family: inherit;
+            border: none;
+            outline: none;
+            cursor: pointer;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        button::-moz-focus-inner {
+            border: 0;
+        }
+
+        /* ─── Header ─── */
+        header {
+            display: flex;
+            align-items: center;
+            padding: .5rem 2rem;
+            background: #fff;
+            border-bottom: 3px solid #ff6600;
+        }
+
+        .logo-group img {
+            height: 22px;
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 2rem;
+            margin-left: 4rem;
+        }
+
+        .main-nav a {
+            position: relative;
+            padding-bottom: 4px;
+            font-weight: 500;
+            color: #2d2d2d;
+        }
+
+        .main-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #ff6600;
+            border-radius: 2px;
+        }
+
+        /* ─── Hero ─── */
+        .hero {
+            background: #ff6600;
+            color: #fff;
+            padding: 1.5rem 1rem;
+        }
+
+        .hero-content {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            margin: 0 0 .5rem;
+            font-size: 1.5rem;
+        }
+
+        .hero p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* ─── Layout ─── */
+        main {
+            flex: 1;
+        }
+
+        .main {
+            max-width: 1280px;
+            margin: 2rem auto;
+            background: #fff;
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            flex: 0 0 260px;
+            background: #fafafa;
+            border-right: 1px solid #ddd;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* ─── Stepper ─── */
+        .progress-tracker {
+            position: relative;
+        }
+
+        .progress-tracker::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            bottom: 20px;
+            left: 20px;
+            width: 3px;
+            background: #ff6600;
+            opacity: .3;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background: #fff;
+            color: #777;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            z-index: 1;
+            box-shadow: none;
+            transition: background .3s;
+        }
+
+        .step-item.completed .circle,
+        .step-item.active .circle {
+            background: #ff6600;
+            border-color: #ff6600;
+            color: #fff;
+        }
+
+        .step-item.active .circle {
+            box-shadow: 0 0 10px rgba(255,102,0,0.3);
+        }
+
+        .step-content {
+            padding-top: 6px;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 12px;
+            color: #777;
+        }
+
+        /* ─── Panels ─── */
+        .step-panel {
+            flex: 1;
+            padding: 2rem;
+            display: none;
+            flex-direction: column;
+        }
+
+        .step-panel.active {
+            display: flex;
+        }
+
+        /* ─── Common Controls ─── */
+        .btn {
+            background: #ff6600;
+            color: #fff;
+            padding: .6rem 1.2rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background .3s;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #d04a02;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-bar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* ─── Step 1 ─── */
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 8px;
+            background: #fafafa;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: background .3s;
+        }
+
+        .upload-area.dragover {
+            background: #fff0e6;
+            border-color: #ff6600;
+        }
+
+        .error-message {
+            color: #ff3366;
+            font-size: 14px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        /* ─── SUCCESS NOTIFICATION ─── */
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .file-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .file-table th,
+        .file-table td {
+            padding: .6rem;
+            border-bottom: 1px solid #ddd;
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        .file-table th {
+            background: #f5f5f5;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .file-table td:last-child {
+            text-align: center;
+        }
+
+        .remove-btn {
+            cursor: pointer;
+            color: #ff3366;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* ─── Steps 2–4 ─── */
+        .pdf-select {
+            width: 100%;
+            padding: .6rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        #preview {
+            width: 100%;
+            height: 500px!important;
+            border: 1px solid #ccc;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            flex: none!important;
+        }
+
+        #preview embed {
+            width: 100%;
+            height: 100%!important;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #eee;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 4px;
+        }
+
+        .tag span {
+            margin-left: 8px;
+            color: red;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .compare {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            height: 500px!important;
+            overflow: hidden;
+            flex: none!important;
+        }
+
+        .compare embed {
+            width: 50%;
+            height: 100%!important;
+            border: 1px solid #ccc;
+        }
+
+        /* ─── Configure Section ─── */
+        .configure-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .configure-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #2d2d2d;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            font-size: 1rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-description {
+            font-size: 0.85rem;
+            color: #666;
+            margin-left: 1.5rem;
+            margin-top: 0.25rem;
+        }
+
+        /* ─── Processing Status ─── */
+        .processing-status {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+            display: none;
+            color: #856404;
+        }
+
+        .processing-status.show {
+            display: block;
+        }
+
+        /* ─── Debug Section ─── */
+        .debug-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .debug-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        .debug-info {
+            color: #6c757d;
+            font-family: monospace;
+            background: #fff;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-group">
+            <img src="{{ url_for('static', filename='Images/logo.svg') }}" alt="pwc logo"/>
+        </div>
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('faqs') }}">FAQs</a>
+            <a href="{{ url_for('about') }}">About</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Data Shield Platform</h1>
+            <p>Upload PDFs, preview & add keywords, redact logos, then compare & download.</p>
+        </div>
+    </section>
+
+    <main>
+        <form id="mainForm" action="{{ url_for('custom') }}" data-preview-url="{{ url_for('preview_redacted') }}" method="post" enctype="multipart/form-data" class="main">
+            <aside class="sidebar">
+                <div class="progress-tracker">
+                    <div class="step-item active" data-step="1">
+                        <div class="circle">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Upload</div>
+                            <div class="step-desc">Add PDFs</div>
+                        </div>
+                    </div>
+                    <div class="step-item" data-step="2">
+                        <div class="circle">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Preview & Keywords</div>
+                            <div class="step-desc">Select file & add words</div>
+                        </div>
+                    </div>
+                    <div class="step-item" data-step="3">
+                        <div class="circle">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Configure</div>
+                            <div class="step-desc">Logo options</div>
+                        </div>
+                    </div>
+                    <div class="step-item" data-step="4">
+                        <div class="circle">4</div>
+                        <div class="step-content">
+                            <div class="step-title">Compare & Download</div>
+                            <div class="step-desc">Compare & save</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- STEP 1 PANEL -->
+            <div id="step-1" class="step-panel active">
+                <h2>Step 1: Upload</h2>
+                <div id="uploadArea" class="upload-area">
+                    <p>Drag & drop PDFs here or <span id="browseLink" style="color:#ff6600;font-weight:600;cursor:pointer;">browse</span>.</p>
+                    <input type="file" id="fileInput" name="pdfs" multiple accept=".pdf" style="display:none;"/>
+                </div>
+                <div id="fileTypeError" class="error-message">Only PDF files are allowed.</div>
+                <div id="successMessage" class="success-message">
+                    Successfully uploaded <span id="fileCount">0</span> documents
+                </div>
+                <div class="file-table-container">
+                    <table class="file-table">
+                        <thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Remove</th></tr></thead>
+                        <tbody id="fileList"></tbody>
+                    </table>
+                </div>
+                <div class="btn-bar-row">
+                    <div></div>
+                    <div class="btn-group">
+                        <button type="button" id="resetFilesBtn" class="btn">Clear All</button>
+                        <button type="button" id="to2" class="btn" disabled>Next →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2 PANEL -->
+            <div id="step-2" class="step-panel">
+                <h2>Step 2: Preview & Keywords</h2>
+                <select id="fileSelect" class="pdf-select"></select>
+                <div id="preview"></div>
+                <div style="display:flex;align-items:center;gap:1rem;margin:1rem 0;">
+                    <input type="text" id="termInput" placeholder="Enter a word & press Enter" style="flex:1;padding:.6rem;"/>
+                    <button type="button" id="clearTermsBtn" class="btn">Clear All Terms</button>
+                </div>
+                <div id="termTags"></div>
+                
+                <div class="btn-bar-row">
+                    <div></div>
+                    <div class="btn-group">
+                        <button type="button" id="back1" class="btn">← Back</button>
+                        <button type="button" id="to3" class="btn" disabled>Next →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3 PANEL - CONFIGURATION OPTIONS -->
+            <div id="step-3" class="step-panel">
+                <h2>Step 3: Configure</h2>
+                
+                <div class="configure-section">
+                    <div class="configure-title">Processing Options</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="redactLogos" name="redact_logos"/>
+                            <label for="redactLogos">Redact Logo</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="redactNumbers" name="redact_numbers"/>
+                            <label for="redactNumbers">Redact Numbers</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-bar-row">
+                    <div></div>
+                    <div class="btn-group">
+                        <button type="button" id="back2" class="btn">← Back</button>
+                        <button type="button" id="to4" class="btn">Next →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4 PANEL -->
+            <div id="step-4" class="step-panel">
+                <h2>Step 4: Compare & Download</h2>
+                <div id="processingStatus" class="processing-status">
+                    Processing files... Please wait.
+                </div>
+                <div id="fileSelectContainer" style="margin-bottom: 1rem; display: none;">
+                    <label for="compareFileSelect" style="font-weight: bold; margin-right: 10px;">Select file to compare:</label>
+                    <select id="compareFileSelect" class="pdf-select" style="width: auto; min-width: 200px;"></select>
+                </div>
+                <div class="compare">
+                    <embed id="origEmbed" src="" type="application/pdf"/>
+                    <embed id="redEmbed" src="" type="application/pdf"/>
+                </div>
+                <div class="btn-bar-row">
+                    <!-- Start Over button -->
+                    <div>
+                        <button type="button" id="restart" class="btn">Start Over</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" id="back3" class="btn">← Back</button>
+                        <button type="submit" id="downloadBtn" class="btn" disabled>Download All</button>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="custom_terms" id="customTermsHidden"/>
+        </form>
+    </main>
+
+    <script>
+        (function() {
+            'use strict';
+            
+            // Wait for DOM to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initApp);
+            } else {
+                initApp();
+            }
+            
+            function initApp() {
+                // Get all DOM elements
+                const form = document.getElementById('mainForm');
+                const previewUrl = form.dataset.previewUrl;
+                const panels = [1,2,3,4].map(i => document.getElementById('step-' + i));
+                const items = document.querySelectorAll('.step-item');
+                
+                // Step 1 elements
+                const uploadArea = document.getElementById('uploadArea');
+                const fileInput = document.getElementById('fileInput');
+                const browseLink = document.getElementById('browseLink');
+                const fileList = document.getElementById('fileList');
+                const fileTypeError = document.getElementById('fileTypeError');
+                const successMessage = document.getElementById('successMessage');
+                const fileCount = document.getElementById('fileCount');
+                const resetBtn = document.getElementById('resetFilesBtn');
+                const to2 = document.getElementById('to2');
+                
+                // Step 2 elements
+                const back1 = document.getElementById('back1');
+                const fileSelect = document.getElementById('fileSelect');
+                const previewDiv = document.getElementById('preview');
+                const termInput = document.getElementById('termInput');
+                const clearTermsBtn = document.getElementById('clearTermsBtn');
+                const termTags = document.getElementById('termTags');
+                const to3 = document.getElementById('to3');
+                
+                // Step 3 elements
+                const back2 = document.getElementById('back2');
+                const redactLogos = document.getElementById('redactLogos');
+                const redactNumbers = document.getElementById('redactNumbers');
+                const to4 = document.getElementById('to4');
+                
+                // Step 4 elements
+                const back3 = document.getElementById('back3');
+                const restart = document.getElementById('restart');
+                const origEmbed = document.getElementById('origEmbed');
+                const redEmbed = document.getElementById('redEmbed');
+                const compareFileSelect = document.getElementById('compareFileSelect');
+                const fileSelectContainer = document.getElementById('fileSelectContainer');
+                const processingStatus = document.getElementById('processingStatus');
+                const downloadBtn = document.getElementById('downloadBtn');
+                
+                // Application state
+                let files = [];
+                let termsByFile = {};
+                let redactedBlobs = {};
+                let currentFile = '';
+                let compareFile = '';
+                
+                // Core functions
+                function showStep(n) {
+                    panels.forEach(function(p, i) {
+                        p.classList.toggle('active', i === n - 1);
+                        items[i].classList.toggle('active', i === n - 1);
+                        items[i].classList.toggle('completed', i < n - 1);
+                    });
+                }
+                
+                function renderFiles() {
+                    fileList.innerHTML = '';
+                    files.forEach(function(f, i) {
+                        const tr = document.createElement('tr');
+                        const size = (f.size / 1024).toFixed(1) + ' KB';
+                        tr.innerHTML = '<td>' + f.name + '</td><td>' + f.type + '</td><td>' + size + '</td><td><span class="remove-btn" data-index="' + i + '">&times;</span></td>';
+                        fileList.appendChild(tr);
+                    });
+                    
+                    // Add remove button listeners
+                    const removeBtns = document.querySelectorAll('.remove-btn');
+                    removeBtns.forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            const index = parseInt(e.target.dataset.index);
+                            files.splice(index, 1);
+                            renderFiles();
+                            populateSelect();
+                            populateCompareSelect();
+                            updateSuccessMessage();
+                            to2.disabled = files.length === 0;
+                        });
+                    });
+                }
+                
+                function updateSuccessMessage() {
+                    if (files.length > 0) {
+                        fileCount.textContent = files.length;
+                        successMessage.classList.add('show');
+                        fileTypeError.style.display = 'none';
+                    } else {
+                        successMessage.classList.remove('show');
+                    }
+                }
+                
+                function addFiles(fileList) {
+                    let hasError = false;
+                    Array.from(fileList).forEach(function(f) {
+                        if (f.type !== 'application/pdf') {
+                            hasError = true;
+                        } else {
+                            files.push(f);
+                            termsByFile[f.name] = [];
+                        }
+                    });
+                    
+                    if (hasError) {
+                        fileTypeError.style.display = 'block';
+                    } else {
+                        fileTypeError.style.display = 'none';
+                    }
+                    
+                    renderFiles();
+                    populateSelect();
+                    populateCompareSelect();
+                    updateSuccessMessage();
+                    to2.disabled = files.length === 0;
+                }
+                
+                function populateSelect() {
+                    fileSelect.innerHTML = '';
+                    files.forEach(function(f) {
+                        const option = document.createElement('option');
+                        option.value = f.name;
+                        option.textContent = f.name;
+                        fileSelect.appendChild(option);
+                    });
+                    
+                    if (files.length > 0) {
+                        currentFile = files[0].name;
+                        fileSelect.value = currentFile;
+                        loadPreview();
+                        loadTags();
+                        to3.disabled = termsByFile[currentFile].length === 0;
+                    }
+                }
+                
+                function populateCompareSelect() {
+                    compareFileSelect.innerHTML = '';
+                    files.forEach(function(f) {
+                        const option = document.createElement('option');
+                        option.value = f.name;
+                        option.textContent = f.name;
+                        compareFileSelect.appendChild(option);
+                    });
+                    
+                    if (files.length > 0) {
+                        compareFile = files[0].name;
+                        compareFileSelect.value = compareFile;
+                    }
+                }
+                
+                function loadPreview() {
+                    previewDiv.innerHTML = '';
+                    const f = files.find(function(x) { return x.name === currentFile; });
+                    if (!f) return;
+                    
+                    const embed = document.createElement('embed');
+                    embed.src = URL.createObjectURL(f);
+                    embed.type = 'application/pdf';
+                    previewDiv.appendChild(embed);
+                }
+                
+                function loadComparisonView() {
+                    const f = files.find(function(x) { return x.name === compareFile; });
+                    if (f && redactedBlobs[compareFile]) {
+                        origEmbed.src = URL.createObjectURL(f);
+                        redEmbed.src = URL.createObjectURL(redactedBlobs[compareFile]);
+                    }
+                }
+                
+                function loadTags() {
+                    termTags.innerHTML = '';
+                    const terms = termsByFile[currentFile] || [];
+                    terms.forEach(function(t, i) {
+                        const span = document.createElement('span');
+                        span.className = 'tag';
+                        span.innerHTML = t + '<span data-index="' + i + '">&times;</span>';
+                        termTags.appendChild(span);
+                    });
+                    
+                    // Add remove tag listeners
+                    const removeTags = termTags.querySelectorAll('span[data-index]');
+                    removeTags.forEach(function(el) {
+                        el.addEventListener('click', function(e) {
+                            const idx = parseInt(e.target.dataset.index);
+                            termsByFile[currentFile].splice(idx, 1);
+                            loadTags();
+                            to3.disabled = termsByFile[currentFile].length === 0;
+                        });
+                    });
+                    
+                    document.getElementById('customTermsHidden').value = JSON.stringify(termsByFile);
+                }
+                
+                function processAllFiles() {
+                    to4.disabled = true;
+                    processingStatus.classList.add('show');
+                    let processedCount = 0;
+                    const totalFiles = files.length;
+                    
+                    function processNextFile(index) {
+                        if (index >= totalFiles) {
+                            // All files processed
+                            processingStatus.classList.remove('show');
+                            
+                            if (files.length > 1) {
+                                fileSelectContainer.style.display = 'block';
+                            }
+                            
+                            compareFile = files[0].name;
+                            compareFileSelect.value = compareFile;
+                            loadComparisonView();
+                            showStep(4);
+                            downloadBtn.disabled = false;
+                            to4.disabled = false;
+                            return;
+                        }
+                        
+                        const f = files[index];
+                        const formData = new FormData();
+                        formData.append('pdf', f);
+                        
+                        // FIXED: Use correct parameter names that match backend expectations
+                        formData.append('remove_logos', redactLogos.checked ? 'true' : 'false');
+                        formData.append('redact_numbers', redactNumbers.checked ? 'true' : 'false');
+                        formData.append('custom_terms', JSON.stringify(termsByFile[f.name] || []));
+                        
+                        console.log('Processing file:', f.name);
+                        console.log('Logo redaction:', redactLogos.checked);
+                        console.log('Number redaction:', redactNumbers.checked);
+                        console.log('Terms:', termsByFile[f.name] || []);
+                        
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', previewUrl);
+                        xhr.responseType = 'arraybuffer';
+                        
+                        xhr.onload = function() {
+                            if (xhr.status === 200) {
+                                redactedBlobs[f.name] = new Blob([xhr.response], {type: 'application/pdf'});
+                                processedCount++;
+                                console.log('Processed ' + processedCount + '/' + totalFiles + ': ' + f.name);
+                                processNextFile(index + 1);
+                            } else {
+                                processingStatus.classList.remove('show');
+                                alert('Failed to process ' + f.name);
+                                to4.disabled = false;
+                            }
+                        };
+                        
+                        xhr.onerror = function() {
+                            processingStatus.classList.remove('show');
+                            alert('Network error processing ' + f.name);
+                            to4.disabled = false;
+                        };
+                        
+                        xhr.send(formData);
+                    }
+                    
+                    processNextFile(0);
+                }
+                
+                // Event listeners
+                
+                // Step 1 - Upload
+                uploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+                
+                uploadArea.addEventListener('dragleave', function() {
+                    uploadArea.classList.remove('dragover');
+                });
+                
+                uploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    addFiles(e.dataTransfer.files);
+                });
+                
+                browseLink.addEventListener('click', function() {
+                    fileInput.click();
+                });
+                
+                fileInput.addEventListener('change', function(e) {
+                    addFiles(e.target.files);
+                });
+                
+                resetBtn.addEventListener('click', function() {
+                    files = [];
+                    termsByFile = {};
+                    redactedBlobs = {};
+                    renderFiles();
+                    populateSelect();
+                    populateCompareSelect();
+                    updateSuccessMessage();
+                    to2.disabled = true;
+                });
+                
+                to2.addEventListener('click', function() {
+                    showStep(2);
+                });
+                
+                // Step 2 - Preview & Keywords
+                back1.addEventListener('click', function() {
+                    showStep(1);
+                });
+                
+                fileSelect.addEventListener('change', function() {
+                    currentFile = fileSelect.value;
+                    loadPreview();
+                    loadTags();
+                    to3.disabled = termsByFile[currentFile].length === 0;
+                });
+                
+                termInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && termInput.value.trim()) {
+                        e.preventDefault();
+                        termsByFile[currentFile].push(termInput.value.trim());
+                        termInput.value = '';
+                        loadTags();
+                        to3.disabled = false;
+                    }
+                });
+                
+                clearTermsBtn.addEventListener('click', function() {
+                    termsByFile[currentFile] = [];
+                    loadTags();
+                    to3.disabled = true;
+                });
+                
+                to3.addEventListener('click', function() {
+                    showStep(3);
+                });
+                
+                // Step 3 - Configure
+                back2.addEventListener('click', function() {
+                    showStep(2);
+                });
+                
+                to4.addEventListener('click', function() {
+                    processAllFiles();
+                });
+                
+                // Step 4 - Compare & Download
+                back3.addEventListener('click', function() {
+                    showStep(3);
+                });
+                
+                restart.addEventListener('click', function() {
+                    window.location.reload();
+                });
+                
+                compareFileSelect.addEventListener('change', function() {
+                    compareFile = compareFileSelect.value;
+                    loadComparisonView();
+                });
+                
+                // Form submission for download
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Create download form
+                    const downloadForm = new FormData();
+                    
+                    // Add all files
+                    files.forEach(function(f) {
+                        downloadForm.append('pdfs', f);
+                    });
+                    
+                    // Add configuration
+                    downloadForm.append('redact_logos', redactLogos.checked ? 'on' : 'off');
+                    downloadForm.append('redact_numbers', redactNumbers.checked ? 'on' : 'off');
+                    downloadForm.append('custom_terms', JSON.stringify(termsByFile));
+                    
+                    // Submit via hidden form to trigger download
+                    const hiddenForm = document.createElement('form');
+                    hiddenForm.method = 'POST';
+                    hiddenForm.action = form.action;
+                    hiddenForm.style.display = 'none';
+                    
+                    // Convert FormData to form elements
+                    for (let [key, value] of downloadForm.entries()) {
+                        if (value instanceof File) {
+                            // Skip files for now - browser will handle them differently
+                            continue;
+                        }
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        hiddenForm.appendChild(input);
+                    }
+                    
+                    // Add file inputs
+                    files.forEach(function(f, index) {
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.name = 'pdfs';
+                        fileInput.style.display = 'none';
+                        
+                        // Create a new FileList with our file
+                        const dt = new DataTransfer();
+                        dt.items.add(f);
+                        fileInput.files = dt.files;
+                        
+                        hiddenForm.appendChild(fileInput);
+                    });
+                    
+                    document.body.appendChild(hiddenForm);
+                    hiddenForm.submit();
+                    document.body.removeChild(hiddenForm);
+                });
+                
+                // Initialize app
+                showStep(1);
+                renderFiles();
+            }
+        })();
+    </script>
+</body>
+</html>
