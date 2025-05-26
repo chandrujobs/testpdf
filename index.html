@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Data Shield Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --pwc-orange: #ff6600;
+            --pwc-light: #fff;
+            --pwc-gray: #f2f2f2;
+            --pwc-dark: #2d2d2d;
+            --max-width: 1280px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--pwc-gray);
+            color: var(--pwc-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--pwc-light);
+            border-bottom: 3px solid var(--pwc-orange);
+            padding: 0.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-group img.logo {
+            height: 22px;
+        }
+
+        .logo-group span.title {
+            margin-left: 0.5rem;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        nav {
+            margin-left: 7rem;
+        }
+
+        nav a {
+            margin: 0 1rem;
+            text-decoration: none;
+            color: var(--pwc-dark);
+            position: relative;
+            padding-bottom: 4px;
+            font-family: Arial, sans-serif;
+            font-weight: 500;
+        }
+
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--pwc-orange);
+            border-radius: 2px;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .hero {
+            background: var(--pwc-orange);
+            color: white;
+            padding: 2rem 0;
+            width: 100%;
+        }
+
+        .content-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .hero-inner h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        .hero-inner p {
+            margin: 0.5rem 0 0;
+            font-size: 0.9rem;
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            margin-top: 2rem;
+        }
+
+        main::before {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            width: 1920px;
+            height: 400px;
+            background-image: url('/static/Images/bg.png');
+            background-position: bottom center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            opacity: 0.15;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-select {
+            padding: 0.75rem 2rem 0.75rem 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+
+        .dropdown-select:focus {
+            outline: none;
+            border-color: var(--pwc-orange);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 300px;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--pwc-orange);
+        }
+
+        .separator-line {
+            border-bottom: 1px solid #ddd;
+            margin: 1.5rem 0;
+        }
+
+        .cards-container {
+            position: relative;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, 300px);
+            gap: 2rem;
+            justify-content: start;
+            margin-top: 1rem;
+        }
+
+        .card {
+            width: 300px;
+            height: 280px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-header img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .card p {
+            flex: 1;
+            margin: 1rem 0;
+            color: #444;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            font-family: Arial, sans-serif;
+        }
+
+        .card-tag {
+            display: inline-block;
+            background: #e0e0e0;
+            color: #666;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.5rem 0;
+            width: fit-content;
+        }
+
+        .card .btn {
+            background: var(--pwc-orange);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            margin-top: 1rem;
+        }
+
+        .card .btn:hover {
+            background: #e55a00;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #666;
+            padding: 1rem 2rem;
+            background: #eaeaea;
+            font-family: Arial, sans-serif;
+        }
+
+        footer a {
+            color: var(--pwc-orange);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-group">
+            <img src="{{ url_for('static', filename='Images/logo.svg') }}" class="logo" alt="PwC Logo">
+            <nav>
+                <a href="{{ url_for('index') }}" class="active">Home</a>
+                <a href="{{ url_for('faqs') }}">FAQs</a>
+                <a href="{{ url_for('about') }}">About</a>
+            </nav>
+        </div>
+        <div class="avatar"></div>
+    </header>
+
+    <section class="hero">
+        <div class="content-container hero-inner">
+            <h1>Welcome to Data Shield Platform</h1>
+            <p>Our platform automatically masks confidential content—text, images, and logos—to protect privacy, compliance, and trust.</p>
+        </div>
+    </section>
+
+    <main>
+        <div class="content-container">
+            <div class="filter-section">
+                <div class="filter-controls">
+                    <div class="dropdown">
+                        <select class="dropdown-select" id="functionalityDropdown">
+                            <option value="">Functionality</option>
+                            <option value="all">ALL</option>
+                            <option value="hc">HC Team</option>
+                            <option value="custom">Custom Redaction</option>
+                        </select>
+                    </div>
+                    <input type="text" class="search-box" placeholder="Search..." id="searchInput">
+                </div>
+            </div>
+
+            <div class="separator-line"></div>
+
+            <div class="cards-container">
+                <div class="cards" id="cardsContainer">
+                    <!-- HC Team Card 1 -->
+                    <div class="card" data-category="hc" data-title="background verification">
+                        <div class="card-header">
+                            <img src="{{ url_for('static', filename='Images/hc.png') }}" alt="HC Icon">
+                            <h3>Background Verification</h3>
+                        </div>
+                        <p>Access curated tools and updates built for the HC Team—your hub for efficient, collaborative workflows.</p>
+                        <div class="card-tag">Human Capital Team</div>
+                        <a href="{{ url_for('hc') }}" class="btn">Get Started</a>
+                    </div>
+
+                    <!-- HC Team Card 2 -->
+                    <div class="card" data-category="hc" data-title="offer letter">
+                        <div class="card-header">
+                            <img src="{{ url_for('static', filename='Images/hc.png') }}" alt="HC Icon">
+                            <h3>Offer Letter</h3>
+                        </div>
+                        <p>Access curated tools and updates built for the HC Team—your hub for efficient, collaborative workflows.</p>
+                        <div class="card-tag">Human Capital Team</div>
+                        <a href="{{ url_for('hc') }}" class="btn">Get Started</a>
+                    </div>
+
+                    <!-- Custom Redaction Card -->
+                    <div class="card" data-category="custom" data-title="access custom">
+                        <div class="card-header">
+                            <img src="{{ url_for('static', filename='Images/custom.png') }}" alt="Custom Icon">
+                            <h3>Access Custom</h3>
+                        </div>
+                        <p>Manage and personalize your experience with tools tailored to your team's unique structure and needs.</p>
+                        <div class="card-tag">Custom Redaction</div>
+                        <a href="{{ url_for('custom') }}" class="btn">Get Started</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy;2025 PwC. All rights reserved. PwC refers to the PwC network and/or one or more of its member firms, each of which is a separate legal entity. Please see <a href="https://pwc.com/structure" target="_blank">pwc.com/structure</a> for further details.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const functionalityDropdown = document.getElementById('functionalityDropdown');
+            const cards = document.querySelectorAll('.card');
+            
+            // Dropdown functionality
+            functionalityDropdown.addEventListener('change', function() {
+                filterCards(this.value, searchInput.value);
+            });
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                filterCards(functionalityDropdown.value, this.value);
+            });
+            
+            function filterCards(dropdownFilter, searchTerm) {
+                cards.forEach(card => {
+                    const category = card.dataset.category;
+                    const title = card.dataset.title.toLowerCase();
+                    const cardText = card.textContent.toLowerCase();
+                    
+                    const matchesDropdown = dropdownFilter === '' || dropdownFilter === 'all' || category === dropdownFilter;
+                    const matchesSearch = searchTerm === '' || 
+                                        title.includes(searchTerm.toLowerCase()) ||
+                                        cardText.includes(searchTerm.toLowerCase());
+                    
+                    if (matchesDropdown && matchesSearch) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
