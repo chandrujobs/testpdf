@@ -144,6 +144,13 @@
             margin-bottom: 1rem;
         }
 
+        .dropdown-label {
+            font-family: Arial, sans-serif;
+            font-size: 0.9rem;
+            color: var(--pwc-dark);
+            font-weight: 500;
+        }
+
         .dropdown {
             position: relative;
             display: inline-block;
@@ -325,8 +332,8 @@
                 <div class="filter-controls">
                     <div class="dropdown">
                         <select class="dropdown-select" id="functionalityDropdown">
-                            <option value="">Functionality</option>
-                            <option value="all">ALL</option>
+                            <option value="" disabled selected>Functionality</option>
+                            <option value="all">All</option>
                             <option value="hc">HC Team</option>
                             <option value="custom">Custom Redaction</option>
                         </select>
@@ -414,6 +421,9 @@
                     }
                 });
             }
+            
+            // Show all cards by default
+            filterCards('all', '');
         });
     </script>
 </body>
