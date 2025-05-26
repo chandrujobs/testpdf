@@ -429,31 +429,6 @@
         .processing-status.show {
             display: block;
         }
-
-        /* ─── Debug Section ─── */
-        .debug-section {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .debug-title {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: #495057;
-        }
-
-        .debug-info {
-            color: #6c757d;
-            font-family: monospace;
-            background: #fff;
-            padding: 0.5rem;
-            border-radius: 4px;
-            border: 1px solid #dee2e6;
-        }
     </style>
 </head>
 <body>
@@ -608,7 +583,7 @@
                     </div>
                     <div class="btn-group">
                         <button type="button" id="back3" class="btn">← Back</button>
-                        <button type="submit" id="downloadBtn" class="btn" disabled>Download All</button>
+                        <button type="submit" id="downloadBtn" class="btn" disabled>Download</button>
                     </div>
                 </div>
             </div>
@@ -781,32 +756,78 @@
                 function loadPreview() {
                     previewDiv.innerHTML = '';
                     const f = files.find(function(x) { return x.name === currentFile; });
-                    if (!f) return;
+                    if (!f) {
+                        console.log('No file found for preview');
+                        return;
+                    }
                     
-                    console.log('Loading preview for:', f.name);
+                    console.log('Loading preview for:', f.name, 'Size:', f.size, 'Type:', f.type);
+                    
+                    // Show loading message
+                    previewDiv.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Loading PDF preview...</div>';
                     
                     try {
-                        const embed = document.createElement('embed');
-                        embed.src = URL.createObjectURL(f);
-                        embed.type = 'application/pdf';
-                        embed.style.width = '100%';
-                        embed.style.height = '100%';
-                        embed.style.border = 'none';
+                        const fileURL = URL.createObjectURL(f);
+                        console.log('Created object URL:', fileURL);
                         
-                        // Add error handling
-                        embed.onerror = function() {
-                            console.error('Failed to load PDF preview');
-                            previewDiv.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Unable to load PDF preview. The file will still be processed correctly.</div>';
+                        // Try using iframe first as it's more reliable
+                        const iframe = document.createElement('iframe');
+                        iframe.src = fileURL;
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                        iframe.style.border = 'none';
+                        
+                        // Set up timeout for loading
+                        const timeout = setTimeout(function() {
+                            console.log('PDF preview timeout, trying embed fallback');
+                            previewDiv.innerHTML = '';
+                            
+                            const embed = document.createElement('embed');
+                            embed.src = fileURL;
+                            embed.type = 'application/pdf';
+                            embed.style.width = '100%';
+                            embed.style.height = '100%';
+                            embed.style.border = 'none';
+                            
+                            embed.onerror = function() {
+                                console.error('Both iframe and embed failed');
+                                previewDiv.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;border:1px solid #ddd;border-radius:4px;"><p><strong>PDF Preview Unavailable</strong></p><p>Your browser may not support PDF preview, but the file will still be processed correctly.</p><p>File: ' + f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)</p></div>';
+                            };
+                            
+                            previewDiv.appendChild(embed);
+                        }, 3000);
+                        
+                        iframe.onload = function() {
+                            console.log('PDF preview loaded successfully via iframe');
+                            clearTimeout(timeout);
                         };
                         
-                        embed.onload = function() {
-                            console.log('PDF preview loaded successfully');
+                        iframe.onerror = function() {
+                            console.log('Iframe failed, trying embed immediately');
+                            clearTimeout(timeout);
+                            
+                            previewDiv.innerHTML = '';
+                            const embed = document.createElement('embed');
+                            embed.src = fileURL;
+                            embed.type = 'application/pdf';
+                            embed.style.width = '100%';
+                            embed.style.height = '100%';
+                            embed.style.border = 'none';
+                            
+                            embed.onerror = function() {
+                                console.error('Both iframe and embed failed');
+                                previewDiv.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;border:1px solid #ddd;border-radius:4px;"><p><strong>PDF Preview Unavailable</strong></p><p>Your browser may not support PDF preview, but the file will still be processed correctly.</p><p>File: ' + f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)</p></div>';
+                            };
+                            
+                            previewDiv.appendChild(embed);
                         };
                         
-                        previewDiv.appendChild(embed);
+                        previewDiv.innerHTML = '';
+                        previewDiv.appendChild(iframe);
+                        
                     } catch (error) {
                         console.error('Error creating PDF preview:', error);
-                        previewDiv.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;">Error loading PDF preview. The file will still be processed correctly.</div>';
+                        previewDiv.innerHTML = '<div style="padding:2rem;text-align:center;color:#666;border:1px solid #ddd;border-radius:4px;"><p><strong>Error Loading PDF Preview</strong></p><p>' + error.message + '</p><p>The file will still be processed correctly.</p></div>';
                     }
                 }
                 
@@ -835,7 +856,7 @@
                             const idx = parseInt(e.target.dataset.index);
                             termsByFile[currentFile].splice(idx, 1);
                             loadTags();
-                            to3.disabled = termsByFile[currentFile].length === 0;
+                            to3.disabled = (termsByFile[currentFile] || []).length === 0;
                         });
                     });
                     
@@ -959,12 +980,15 @@
                     currentFile = fileSelect.value;
                     loadPreview();
                     loadTags();
-                    to3.disabled = termsByFile[currentFile].length === 0;
+                    to3.disabled = (termsByFile[currentFile] || []).length === 0;
                 });
                 
                 termInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' && termInput.value.trim()) {
                         e.preventDefault();
+                        if (!termsByFile[currentFile]) {
+                            termsByFile[currentFile] = [];
+                        }
                         termsByFile[currentFile].push(termInput.value.trim());
                         termInput.value = '';
                         loadTags();
@@ -1005,48 +1029,44 @@
                     loadComparisonView();
                 });
                 
-                // Form submission for download
+                // Form submission for download - FIXED
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    // Create download form
-                    const downloadForm = new FormData();
+                    if (files.length === 0) {
+                        alert('No files to download');
+                        return;
+                    }
+                    
+                    console.log('Starting download process...');
+                    downloadBtn.disabled = true;
+                    downloadBtn.textContent = 'Downloading...';
+                    
+                    // Create a proper FormData object for submission
+                    const formData = new FormData();
                     
                     // Add all files
                     files.forEach(function(f) {
-                        downloadForm.append('pdfs', f);
+                        formData.append('pdfs', f);
                     });
                     
                     // Add configuration
-                    downloadForm.append('redact_logos', redactLogos.checked ? 'on' : 'off');
-                    downloadForm.append('redact_numbers', redactNumbers.checked ? 'on' : 'off');
-                    downloadForm.append('custom_terms', JSON.stringify(termsByFile));
+                    formData.append('redact_logos', redactLogos.checked ? 'on' : 'off');
+                    formData.append('redact_numbers', redactNumbers.checked ? 'on' : 'off');
+                    formData.append('custom_terms', JSON.stringify(termsByFile));
                     
-                    // Submit via hidden form to trigger download
+                    // Create a hidden form and submit it properly
                     const hiddenForm = document.createElement('form');
                     hiddenForm.method = 'POST';
                     hiddenForm.action = form.action;
+                    hiddenForm.enctype = 'multipart/form-data';
                     hiddenForm.style.display = 'none';
                     
-                    // Convert FormData to form elements
-                    for (let [key, value] of downloadForm.entries()) {
-                        if (value instanceof File) {
-                            // Skip files for now - browser will handle them differently
-                            continue;
-                        }
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = key;
-                        input.value = value;
-                        hiddenForm.appendChild(input);
-                    }
-                    
-                    // Add file inputs
-                    files.forEach(function(f, index) {
+                    // Create file inputs
+                    files.forEach(function(f) {
                         const fileInput = document.createElement('input');
                         fileInput.type = 'file';
                         fileInput.name = 'pdfs';
-                        fileInput.style.display = 'none';
                         
                         // Create a new FileList with our file
                         const dt = new DataTransfer();
@@ -1056,9 +1076,36 @@
                         hiddenForm.appendChild(fileInput);
                     });
                     
+                    // Add other form data
+                    const logoInput = document.createElement('input');
+                    logoInput.type = 'hidden';
+                    logoInput.name = 'redact_logos';
+                    logoInput.value = redactLogos.checked ? 'on' : 'off';
+                    hiddenForm.appendChild(logoInput);
+                    
+                    const numbersInput = document.createElement('input');
+                    numbersInput.type = 'hidden';
+                    numbersInput.name = 'redact_numbers';
+                    numbersInput.value = redactNumbers.checked ? 'on' : 'off';
+                    hiddenForm.appendChild(numbersInput);
+                    
+                    const termsInput = document.createElement('input');
+                    termsInput.type = 'hidden';
+                    termsInput.name = 'custom_terms';
+                    termsInput.value = JSON.stringify(termsByFile);
+                    hiddenForm.appendChild(termsInput);
+                    
                     document.body.appendChild(hiddenForm);
+                    
+                    // Submit and clean up
                     hiddenForm.submit();
-                    document.body.removeChild(hiddenForm);
+                    
+                    // Clean up after a delay
+                    setTimeout(function() {
+                        document.body.removeChild(hiddenForm);
+                        downloadBtn.disabled = false;
+                        downloadBtn.textContent = 'Download All';
+                    }, 1000);
                 });
                 
                 // Initialize app
